@@ -1,4 +1,5 @@
 package com.oop_semesterproject.TravelPartner;
+
 /**
  *
  * @author Burhan Arif
@@ -8,98 +9,170 @@ import io.javalin.Javalin;
 import java.sql.*;
 import java.util.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.oop_semesterproject.TravelPartner.DTO.UserRequest;
-import io.jsonwebtoken.*;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import org.mindrot.jbcrypt.BCrypt;
+//user defined Imports
+import com.oop_semesterproject.TravelPartner.DTO.*;
+import com.oop_semesterproject.TravelPartner.exceptions.*;
 
 public class ProjectMain {
 
     public static void main(String[] args) {
-        Javalin app = Javalin.create().start(7000);
+        Javalin app = Javalin.create(
+                config -> {
+                    config.plugins.enableCors(cors -> {
+                        cors.add(it -> {
+                            it.anyHost();  // Don't use this in production
+                            it.exposeHeader("hx-target");
+                            
+                        });
+                    });
+                }//config in future
+        ).start(7000);
         Database.initializeDatabase();
-ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        // for testing on local host
+        app.before(ctx -> {
+            ctx.header("Access-Control-Allow-Origin", "*");
+            ctx.header("Access-Control-Allow-Headers", "*");
+            ctx.header("Access-Control-Allow-Credentials", "true"); // If using cookies
+        });
 
-app.post("/api/register", ctx -> {
-    try {
-        // Parse directly to UserRequest
-        UserRequest userRequest = objectMapper.readValue(ctx.body(), UserRequest.class);
-        
-        // Validate required fields
-        if (userRequest.name() == null || userRequest.email() == null || 
-            userRequest.password() == null) {
-            ctx.status(400).json(Map.of(
-                "status", "error",
-                "message", "Missing required fields"
-            ));
-            return;
-        }
-        
-        Map<String, Object> result = Database.createUser(userRequest);
-        ctx.status(201).json(result);
-        
-    } catch (JsonProcessingException e) {
-        ctx.status(400).json(Map.of(
-            "status", "error",
-            "message", "Invalid JSON format",
-            "details", e.getMessage()
-        ));
-    } catch (SQLException e) {
-        ctx.status(500).json(Map.of(
-            "status", "error",
-            "message", "Database error",
-            "details", e.getMessage()
-        ));
-    }
-});
+        // Auth routes
+        /// Registration of a new User
+        app.post("/api/register", ctx -> {
+            try {
+                // Parse directly to UserRequest
+                UserRegisterRequest userRequest = objectMapper.readValue(ctx.body(), UserRegisterRequest.class);
+
+                // Validate required fields
+                if (userRequest.name() == null || userRequest.email() == null
+                        || userRequest.password() == null || userRequest.phoneNumber() == null) {
+                    ctx.status(400).json(Map.of(
+                            "status", "error",
+                            "message", "Missing required fields"
+                    ));
+                    throw new IncompleteInformationException("Required fields are not present/incorrect");
+
+                }
+
+                Map<String, Object> result = Database.createUser(userRequest);
+                ctx.status(201).json(result);
+
+            } catch (IncompleteInformationException | EmailAlreadyExistsException e) {
+                ctx.status(500).json(Map.of(
+                        "status", "error",
+                        "message", "Registration error",
+                        "details", e.getMessage()
+                ));
+            } catch (JsonProcessingException e) {
+                ctx.status(400).json(Map.of(
+                        "status", "error",
+                        "message", "Invalid JSON format"
+                //      ,"details", e.getMessage()
+                ));
+            } catch (SQLException e) {
+                ctx.status(500).json(Map.of(
+                        "status", "error",
+                        "message", "Database error",
+                        "details", e.getMessage()
+                ));
+            }
+        });
+        //login the user
         app.post("/api/login", ctx -> {
-            // Parse JSON body to a map
-            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:users.db")) {
+            try {
                 var body = objectMapper.readValue(ctx.body(), Map.class);
+
                 String email = (String) body.get("email");
                 String password = (String) body.get("password");
-                // Processing request parameters
-                Optional<UserRequest> FoundUserOpt = Database.getUserByEmail(email);
-                UserRequest FoundUser = FoundUserOpt.get();
-                boolean isPassValid = BCrypt.checkpw(password, FoundUser.password() );
-                if (!isPassValid){
-                    ctx.status(201).json(Map.of("message", "User not logged in"));
-                }else{
-                    password = FoundUser.password();
-                String sql = "SELECT ID FROM users WHERE email = ? and password = ?";
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                stmt.setString(1, email);
-                stmt.setString(2, password); 
 
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    ctx.status(201).json(Map.of("message", "User logged in"));
-                } else {
-                    ctx.status(201).json(Map.of("message", "User not logged in"));
-                }
-                 }
-            } catch (SQLException exp) {
+                LoginResponse result = Database.loginUser(email, password);
+                ctx.status(200).json(result);
+
+            } catch (JsonProcessingException e) {
+                ctx.status(400).json(Map.of(
+                        "status", "error",
+                        "message", "Invalid JSON format"
+                //      ",details", e.getMessage()
+                ));
+            } catch (UserNotFoundException | InvalidCredentialsException e) {
+
+                ctx.status(401).json(Map.of("error", e.getMessage()));
+
+            } catch (SQLException e) {
                 ctx.status(500).json(Map.of(
                         "error", "Database error",
-                        "message", exp.getMessage())
-                );
+                        "message", e.getMessage() //TODO: delete in production
+                ));
+            }
+        });
+        //add route for the user to or from uni route
+        app.post("/api/addroute", ctx -> {
+
+            try {
+                //auth confirmation
+                String userId = JWTUtil.requireAuth(ctx);
+                // JSON parsing
+                AddRouteRequest route = objectMapper.readValue(ctx.body(), AddRouteRequest.class);
+                // Main Processing function call
+                Map<String, Object> result = Database.addRoute(route, userId);
+
+                ctx.status(200).json(result);
+            } catch (UnauthorizedException e) {
+                ctx.status(400);
+            } catch (JsonProcessingException e) {
+                ctx.status(400).json(Map.of(
+                        "status", "error",
+                        "message", "Invalid JSON format"
+                //      ,"details", e.getMessage()
+                ));
+            } catch (IllegalArgumentException e) {
+                ctx.status(400).json(Map.of("error", e.getMessage()));
+            } catch (SQLException e) {
+                if (e.getMessage().contains("UNIQUE") || e.getMessage().contains("constraint failed")) {
+
+                    ctx.status(500).json(Map.of("error", "Database error", "details", "Route Already Exists, One to and one from route is allowed per user"));
+
+                } else {
+                    ctx.status(500).json(Map.of("error", "Database error", "details", e.getMessage()));
+                }
+
             }
         });
 
-        app.post("/api/", ctx -> {
-        
-        });
-        app.get("/users", ctx -> {
-            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:users.db")) {
-                var rs = conn.createStatement().executeQuery("SELECT * FROM users");
-                StringBuilder result = new StringBuilder();
-                while (rs.next()) {
-                    result.append(rs.getString("id")).append(": ").append(rs.getString("name")).append("\n");
-                }
-                ctx.result(result.toString());
+        app.post("/api/routes", ctx -> {
+            try {
+                RouteLookupReponse req = objectMapper.readValue(ctx.body(), RouteLookupReponse.class);
+                List<RouteResult> results = Database.lookupRoutes(req);
+                ctx.status(200).json(Map.of(
+                        "routes", results,
+                        "count", results.size(),
+                        "page", req.page()
+                ));
+            } catch (IllegalArgumentException e) {
+                ctx.status(400).json(Map.of("error", e.getMessage()));
             } catch (SQLException e) {
-                ctx.status(500).result("DB error");
+                ctx.status(500).json(Map.of("error", "Database error", "details", e.getMessage()));
+            }
+        });
+
+        //DEBUG: Fetch all 
+        app.get("/users", ctx -> {
+
+            try {
+                String userId = JWTUtil.requireAuth(ctx);
+
+                try (Connection conn = DriverManager.getConnection("jdbc:sqlite:root.db")) {
+                    var rs = conn.createStatement().executeQuery("SELECT * FROM users");
+                    StringBuilder result = new StringBuilder();
+                    while (rs.next()) {
+                        result.append(rs.getString("id")).append(": ").append(rs.getString("name")).append("\n");
+                    }
+                    ctx.result(result.toString());
+                } catch (SQLException e) {
+                    ctx.status(500);
+                }
+            } catch (UnauthorizedException e) {
+                ctx.status(400);
             }
         });
 

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Travel Partner</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="htmx.min.js"></script>
+    <script>
+        // Add authorization header to all HTMX requests
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            const token = localStorage.getItem('travelToken');
+            if (token) {
+                evt.detail.headers['Authorization'] = 'Bearer ' + token;
+            }
+        });
+        
+        // Check auth on page load
+        function checkAuth() {
+            const token = localStorage.getItem('travelToken');
+            if (!token) {
+                window.location.href = '/login.html';
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('travelToken');
+            localStorage.removeItem('userId');
+            window.location.href = '/login.html';
+        }
+    </script>
+</head>
+<body onload="checkAuth()">
+    <div class="container">
+        <header>
+            <h1>Travel Partner Dashboard</h1>
+            <button onclick="logout()" class="btn btn-logout">Logout</button>
+        </header>
+        
+        <div class="dashboard-grid">
+            <div class="card">
+                <h2>Add Your Route</h2>
+                <p>Share your daily commute to find travel partners</p>
+                <a href="/add-route.html" class="btn">Add Route</a>
+            </div>
+            
+            <div class="card">
+                <h2>Find Partners</h2>
+                <p>Discover people with similar routes</p>
+                <a href="/find-routes.html" class="btn">Find Routes</a>
+            </div>
+            
+            <div class="card">
+                <h2>Your Profile</h2>
+                <p>View and edit your profile information</p>
+                <button hx-get="http://localhost:7000/api/user" hx-target="#profile-info" class="btn">Load Profile</button>
+                <div id="profile-info"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
