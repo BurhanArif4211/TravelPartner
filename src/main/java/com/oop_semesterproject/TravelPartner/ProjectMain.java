@@ -22,7 +22,7 @@ public class ProjectMain {
                         cors.add(it -> {
                             it.anyHost();  // Don't use this in production
                             it.exposeHeader("hx-target");
-                            
+
                         });
                     });
                 }//config in future
@@ -44,14 +44,13 @@ public class ProjectMain {
                 UserRegisterRequest userRequest = objectMapper.readValue(ctx.body(), UserRegisterRequest.class);
 
                 // Validate required fields
-                if (userRequest.name() == null || userRequest.email() == null
-                        || userRequest.password() == null || userRequest.phoneNumber() == null) {
-                    ctx.status(400).json(Map.of(
-                            "status", "error",
-                            "message", "Missing required fields"
-                    ));
+                if (userRequest.name() == null
+                        || userRequest.email() == null
+                        || userRequest.password() == null 
+                        || userRequest.phone_number() == null
+                        || userRequest.transportationType() == null
+                        || userRequest.available() == null) {
                     throw new IncompleteInformationException("Required fields are not present/incorrect");
-
                 }
 
                 Map<String, Object> result = Database.createUser(userRequest);
@@ -144,6 +143,7 @@ public class ProjectMain {
                 RouteLookupReponse req = objectMapper.readValue(ctx.body(), RouteLookupReponse.class);
                 List<RouteResult> results = Database.lookupRoutes(req);
                 ctx.status(200).json(Map.of(
+                        "status", "success",
                         "routes", results,
                         "count", results.size(),
                         "page", req.page()

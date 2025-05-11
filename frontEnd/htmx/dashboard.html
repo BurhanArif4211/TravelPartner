@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Travel Partner</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input,
+        select,
+        button {
+            padding: 8px;
+            margin: 5px;
+        }
+
+        .route-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .pagination {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header" hx-headers='{"Authorization": "Bearer ${localStorage.getItem(' token')}"}'>
+        <h1>Welcome to Your Dashboard</h1>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Add Route Form -->
+    <div class="section">
+        <h2>Add New Route</h2>
+        <form hx-ext="json-enc" hx-post="http://localhost:7000/api/addroute" hx-target="#add-route-response">
+            <select name="type" required>
+                <option value="toRoutes">Select Route Type</option>
+                <option value="toRoutes">To Routes</option>
+                <option value="fromRoutes">From Routes</option>
+            </select>
+
+            <input type="text" name="startPoint" placeholder="Start Point" required>
+            <input type="text" name="endPoint" placeholder="End Point" required>
+            <input type="datetime-local" name="startTimestamp" required>
+            <input type="text" name="address" placeholder="Address" required>
+            <input type="text" name="generalArea" placeholder="General Area" required>
+            <button type="submit">Add Route</button>
+        </form>
+        <div id="add-route-response" class="response"></div>
+    </div>
+
+    <!-- Route Filter and Search -->
+    <div class="section">
+        <h2>Find Routes</h2>
+        <form hx-ext="json-enc" hx-post="http://localhost:7000/api/routes" hx-target="#route-results"
+            hx-trigger="submit, change from:select" id="route-form">
+            <select name="type" required>
+                <option value="toRoutes">To Routes</option>
+                <option value="fromRoutes">From Routes</option>
+            </select>
+            <input type="text" name="generalArea" placeholder="Filter by Area">
+            <input type="hidden" name="page" value="1">
+            <input type="hidden" name="limit" value="10">
+            <button type="submit">Search</button>
+        </form>
+
+        <script>
+            document.body.addEventListener('htmx:configRequest', (event) => {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    event.detail.headers['Authorization'] = `Bearer ${token}`;
+                }
+            });
+        </script>
+    </div>
+
+    <!-- Route Results -->
+    <div id="route-results" class="section">
+        <!-- Results will be loaded here -->
+    </div>
+
+    <!-- Template for Route Cards -->
+    <template id="route-template">
+        <div class="route-card">
+            <h3>${startPoint} → ${endPoint}</h3>
+            <p>Date: ${startTimestamp}</p>
+            <p>Address: ${address}</p>
+            <p>Area: ${generalArea}</p>
+            <button hx-post="/api/connect" hx-vals='{"userId": "${userId}"}'>Connect</button>
+        </div>
+    </template>
+
+    <script>
+        window.onload = function() {
+            if (!localStorage.getItem('token')) {
+                window.location.href = '/index.html';
+            }
+        };
+        // Handle logout
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+            window.location.href = '/index.html';
+        }
+
+        // Handle add route response
+        document.body.addEventListener('htmx:afterRequest', function (evt) {
+            if (evt.target.id === 'add-route-response') {
+                const responseDiv = evt.target;
+                try {
+                    const response = JSON.parse(responseDiv.innerHTML);
+                    if (response.status === 'success') {
+                        responseDiv.innerHTML = `<div class="success">Route added successfully!</div>`;
+                        // Refresh the route list
+                        htmx.trigger('#route-results', 'refresh');
+                    } else {
+                        responseDiv.innerHTML = `<div class="error">${response.message || 'Error adding route'}</div>`;
+                    }
+                } catch (e) {
+                    responseDiv.innerHTML = `<div class="error">Invalid server response</div>`;
+                }
+            }
+        });
+
+        // Custom rendering for route results
+        htmx.on('htmx:afterSwap', function (evt) {
+            if (evt.target.id === 'route-results') {
+                const data = JSON.parse(evt.detail.xhr.responseText);
+                const template = document.getElementById('route-template');
+                const container = document.getElementById('route-results');
+
+                container.innerHTML = '';
+
+                data.routes.forEach(route => {
+                    const html = Object.entries(route).reduce((acc, [key, value]) => {
+                        return acc.replace(new RegExp(`\\$\{${key}}`, 'g'), value);
+                    }, template.innerHTML);
+
+                    const div = document.createElement('div');
+                    div.innerHTML = html;
+                    container.appendChild(div);
+                });
+
+                // Add pagination controls
+                const pagination = document.createElement('div');
+                pagination.className = 'pagination';
+                if (data.page > 1) {
+                    pagination.innerHTML += `<button onclick="navigatePage(${data.page - 1})">Previous</button>`;
+                }
+                if (data.page * data.limit < data.count) {
+                    pagination.innerHTML += `<button onclick="navigatePage(${data.page + 1})">Next</button>`;
+                }
+                container.appendChild(pagination);
+            }
+        });
+
+        function navigatePage(page) {
+            const form = document.querySelector('#route-results').previousElementSibling;
+            form.querySelector('[name="page"]').value = page;
+            htmx.trigger(form, 'submit');
+        }
+    </script>
+</body>
+
+</html>

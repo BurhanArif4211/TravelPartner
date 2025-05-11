@@ -24,8 +24,8 @@ public class Database {
                     + "email TEXT UNIQUE NOT NULL,"
                     + "password TEXT NOT NULL,"
                     + "phone_number TEXT,"
-                    + "transportationType TEXT NOT NULL," +
-                      "available BOOLEAN NOT NULL"
+                    + "transportationType TEXT NOT NULL," 
+                    + "available TEXT NOT NULL"
                     + ");";
             String createToRoutesTable
                    ="CREATE TABLE IF NOT EXISTS toRoutes(" +
@@ -59,25 +59,25 @@ public class Database {
     }
     // Registration for new user
     public static Map<String, Object> createUser(UserRegisterRequest user) throws SQLException {
+        
         String uuid = UUID.randomUUID().toString();
         String encPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
 
         try (Connection conn = DriverManager.getConnection("jdbc:sqlite:root.db")) {
-            String sql = "INSERT INTO users (id, name, email, password, phone_number) VALUES (?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO users (id, name, email, password, phone_number, transportationType, available) VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, uuid);
             stmt.setString(2, user.name());
             stmt.setString(3, user.email());
             stmt.setString(4, encPassword);
-            stmt.setString(5, user.phoneNumber());
-
+            stmt.setString(5, user.phone_number());
+            stmt.setString(6, user.transportationType());
+            stmt.setString(7, user.available());
             int affectedRows = stmt.executeUpdate();
-
             if (affectedRows == 0) {
                 throw new SQLException("Creating user failed, no rows affected.");
             }
-
             return Map.of(
                     "status", "success",
                     "id", uuid,
@@ -128,12 +128,12 @@ public class Database {
     
     try (Connection conn = DriverManager.getConnection("jdbc:sqlite:root.db")) {
         
-        if (route.type().equalsIgnoreCase("to")) {
+        if (route.type().equalsIgnoreCase("toRoutes")) {
             sql = """
                 INSERT INTO toRoutes (id, startPoint, endPoint, startTimestamp, startAddress, generalArea)
                 VALUES (?, ?, ?, ?, ?, ?)
             """;
-        } else if (route.type().equalsIgnoreCase("from")) {
+        } else if (route.type().equalsIgnoreCase("fromRoutes")) {
             sql = """
                 INSERT INTO fromRoutes (id, startPoint, endPoint, startTimestamp, endAddress, generalArea)
                 VALUES (?, ?, ?, ?, ?, ?)
