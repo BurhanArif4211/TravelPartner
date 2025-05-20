@@ -69,6 +69,93 @@
                 <option value="fromRoutes">From Routes</option>
             </select>
 
+            <!-- Add to your existing HTML head section -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/css/ol.css">
+<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/build/ol.js"></script>
+
+<!-- Add this to your Add Route form section -->
+<div class="section">
+    <h2>Select Location</h2>
+    <div id="map" style="height: 400px; width: 100%; border: 1px solid #ccc; margin-bottom: 10px;"></div>
+    <div id="coordinates" style="margin-bottom: 10px;"></div>
+    <input type="hidden" id="latitude" name="latitude">
+    <input type="hidden" id="longitude" name="longitude">
+    <button type="button" onclick="clearCoordinates()">Clear Selection</button>
+</div>
+
+<script>
+    // Initialize map
+    let map;
+    let clickMarker;
+    
+    function initMap() {
+        map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([0, 0]),
+                zoom: 2
+            })
+        });
+
+        // Add click event listener
+        map.on('click', function(evt) {
+            const coords = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
+            const [lon, lat] = coords;
+            
+            // Update display
+            document.getElementById('coordinates').innerHTML = 
+                `Selected Location: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+            
+            // Update hidden inputs
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+            
+            // Add/update marker
+            if (clickMarker) {
+                map.removeLayer(clickMarker);
+            }
+            
+            clickMarker = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: [
+                        new ol.Feature({
+                            geometry: new ol.geom.Point(ol.proj.fromLonLat([lon, lat]))
+                        })
+                    ]
+                }),
+                style: new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 6,
+                        fill: new ol.style.Fill({color: 'red'}),
+                        stroke: new ol.style.Stroke({
+                            color: 'white', width: 2
+                        })
+                    })
+                })
+            });
+            
+            map.addLayer(clickMarker);
+        });
+    }
+
+    function clearCoordinates() {
+        document.getElementById('coordinates').innerHTML = '';
+        document.getElementById('latitude').value = '';
+        document.getElementById('longitude').value = '';
+        if (clickMarker) {
+            map.removeLayer(clickMarker);
+        }
+    }
+
+    // Initialize the map when the page loads
+    window.addEventListener('load', initMap);
+</script>
+
             <input type="text" name="startPoint" placeholder="Start Point" required>
             <input type="text" name="endPoint" placeholder="End Point" required>
             <input type="datetime-local" name="startTimestamp" required>
