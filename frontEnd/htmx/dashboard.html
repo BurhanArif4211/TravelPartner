@@ -63,7 +63,7 @@
     <div class="section">
         <h2>Add New Route</h2>
         <form hx-ext="json-enc" hx-post="http://localhost:7000/api/addroute" hx-target="#add-route-response">
-            <select name="type" required>
+            <select onchange ="handleRouteTypeChange()"  id = "route_type" name="type" required>
                 <option value="toRoutes">Select Route Type</option>
                 <option value="toRoutes">To Routes</option>
                 <option value="fromRoutes">From Routes</option>
@@ -78,11 +78,16 @@
     <h2>Select Location</h2>
     <div id="map" style="height: 400px; width: 100%; border: 1px solid #ccc; margin-bottom: 10px;"></div>
     <div id="coordinates" style="margin-bottom: 10px;"></div>
-    <input type="hidden" id="latitude" name="latitude">
-    <input type="hidden" id="longitude" name="longitude">
     <button type="button" onclick="clearCoordinates()">Clear Selection</button>
 </div>
 
+            <input type="text" id ="startPoint" name="startPoint" placeholder="Start Point" required>
+            <input type="text" id ="endPoint" name="endPoint" value="Dawood University" placeholder="End Point" required disabled="disabled">
+            <input type="datetime-local" name="startTimestamp" required>
+            <input type="text" name="address" placeholder="Address" required>
+            <input type="text" name="generalArea" placeholder="General Area" required>
+            <button type="submit">Add Route</button>
+   
 <script>
     // Initialize map
     let map;
@@ -112,8 +117,11 @@
                 `Selected Location: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
             
             // Update hidden inputs
-            document.getElementById('latitude').value = lat;
-            document.getElementById('longitude').value = lon;
+          if (document.getElementById('route_type').value == 'toRoutes'){
+            document.getElementById('startPoint').value = `${lat},${lon}`;  
+          }else if (document.getElementById('route_type').value == 'fromRoutes'){
+            document.getElementById('endPoint').value = `${lat},${lon}`;   
+          }
             
             // Add/update marker
             if (clickMarker) {
@@ -145,8 +153,8 @@
 
     function clearCoordinates() {
         document.getElementById('coordinates').innerHTML = '';
-        document.getElementById('latitude').value = '';
-        document.getElementById('longitude').value = '';
+        document.getElementById('startPoint').value = '';
+        document.getElementById('endPoint').value = '';
         if (clickMarker) {
             map.removeLayer(clickMarker);
         }
@@ -156,12 +164,6 @@
     window.addEventListener('load', initMap);
 </script>
 
-            <input type="text" name="startPoint" placeholder="Start Point" required>
-            <input type="text" name="endPoint" placeholder="End Point" required>
-            <input type="datetime-local" name="startTimestamp" required>
-            <input type="text" name="address" placeholder="Address" required>
-            <input type="text" name="generalArea" placeholder="General Area" required>
-            <button type="submit">Add Route</button>
         </form>
         <div id="add-route-response" class="response"></div>
     </div>
@@ -219,6 +221,20 @@
             localStorage.removeItem('userId');
             window.location.href = '/index.html';
         }
+        function handleRouteTypeChange(){
+            let startPoint_field = document.getElementById('startPoint');
+            let endPoint_field = document.getElementById('endPoint');
+          if (document.getElementById('route_type').value == "toRoutes"){
+            endPoint_field.value = "Dawood University";
+            startPoint_field.disabled = false;
+            endPoint_field.disabled = true;
+          }else if (document.getElementById('route_type').value == "fromRoutes"){
+            startPoint_field.value = "Dawood University";
+            endPoint_field.disabled = false;
+            startPoint_field.disabled = true;
+          }
+        }
+        
 
         // Handle add route response
         document.body.addEventListener('htmx:afterRequest', function (evt) {

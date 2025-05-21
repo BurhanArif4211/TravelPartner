@@ -21,7 +21,6 @@ public class ProjectMain {
                     config.plugins.enableCors(cors -> {
                         cors.add(it -> {
                             it.anyHost();  // Don't use this in production
-                            it.exposeHeader("hx-target");
 
                         });
                     });
@@ -33,7 +32,6 @@ public class ProjectMain {
         app.before(ctx -> {
             ctx.header("Access-Control-Allow-Origin", "*");
             ctx.header("Access-Control-Allow-Headers", "*");
-            ctx.header("Access-Control-Allow-Credentials", "true"); // If using cookies
         });
 
         // Auth routes
