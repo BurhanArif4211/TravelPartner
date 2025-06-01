@@ -7,162 +7,75 @@
     <title>Dashboard - Travel Partner</title>
     <script src="https://unpkg.com/htmx.org"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        input,
-        select,
-        button {
-            padding: 8px;
-            margin: 5px;
-        }
-
-        .route-card {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-        }
-
-        .pagination {
-            margin-top: 20px;
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
+    <script src="dashboard.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <div class="header" hx-headers='{"Authorization": "Bearer ${localStorage.getItem(' token')}"}'>
-        <h1>Welcome to Your Dashboard</h1>
-        <button onclick="logout()">Logout</button>
+    <div class="header">
+        <div class="logo">Travel<span>Partner</span></div>
+        <div class="user-info">
+            <div class="avatar" id="user-avatar"></div>
+            <div class="user-name"></div>
+            <!--more info-->
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        
+    </div>
+
+    <div id="connected-section" class="card" style="display: none;">
+        <div class="card-header">
+            <h2 class="card-title">Your Travel Partner</h2>
+        </div>
+        <div class="connected-user-card" id="connected-user-info">
+            <div class="connected-info">
+                <div class="connected-id" id="partner-details"></div>
+            </div>
+        </div>
+    </div>
+    <div class="card" id="requests-section" style="display: none;">
+        <div class="card-header">
+            <h2 class="card-title">Connection Requests</h2>
+            <button class="refresh-btn" onclick="loadReceivedRequests()">Refresh</button>
+        </div>
+        <div class="requests-list" id="received-requests">
+            <div class="no-requests">
+                <p>Loading connection requests...</p>
+            </div>
+        </div>
     </div>
 
     <!-- Add Route Form -->
     <div class="section">
         <h2>Add New Route</h2>
         <form hx-ext="json-enc" hx-post="http://localhost:7000/api/addroute" hx-target="#add-route-response">
-            <select onchange ="handleRouteTypeChange()"  id = "route_type" name="type" required>
-                <option value="toRoutes">Select Route Type</option>
+            <select onchange="handleRouteTypeChange()" id="route_type" name="type" required>
                 <option value="toRoutes">To Routes</option>
                 <option value="fromRoutes">From Routes</option>
             </select>
 
             <!-- Add to your existing HTML head section -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/css/ol.css">
-<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/build/ol.js"></script>
+            <link rel="stylesheet"
+                href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/css/ol.css">
+            <script
+                src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/build/ol.js"></script>
 
-<!-- Add this to your Add Route form section -->
-<div class="section">
-    <h2>Select Location</h2>
-    <div id="map" style="height: 400px; width: 100%; border: 1px solid #ccc; margin-bottom: 10px;"></div>
-    <div id="coordinates" style="margin-bottom: 10px;"></div>
-    <button type="button" onclick="clearCoordinates()">Clear Selection</button>
-</div>
+            <!-- Add this to your Add Route form section -->
+            <div class="section">
+                <h2>Select Location</h2>
+                <div id="map" style="height: 400px; width: 100%; border: 1px solid #ccc; margin-bottom: 10px;"></div>
+                <div id="coordinates" style="margin-bottom: 10px;"></div>
+                <button type="button" onclick="clearCoordinates()">Clear Selection</button>
+            </div>
 
-            <input type="text" id ="startPoint" name="startPoint" placeholder="Start Point" required>
-            <input type="text" id ="endPoint" name="endPoint" value="Dawood University" placeholder="End Point" required disabled="disabled">
+            <input type="text" id="startPoint" name="startPoint" placeholder="Start Point" required readonly="">
+            <input type="text" id="endPoint" name="endPoint" value="Dawood University" placeholder="End Point" required
+                readonly="">
             <input type="datetime-local" name="startTimestamp" required>
             <input type="text" name="address" placeholder="Address" required>
             <input type="text" name="generalArea" placeholder="General Area" required>
             <button type="submit">Add Route</button>
-   
-<script>
-    // Initialize map
-    let map;
-    let clickMarker;
-    
-    function initMap() {
-        map = new ol.Map({
-            target: 'map',
-            layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.OSM()
-                })
-            ],
-            view: new ol.View({
-                center: ol.proj.fromLonLat([0, 0]),
-                zoom: 2
-            })
-        });
 
-        // Add click event listener
-        map.on('click', function(evt) {
-            const coords = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
-            const [lon, lat] = coords;
-            
-            // Update display
-            document.getElementById('coordinates').innerHTML = 
-                `Selected Location: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-            
-            // Update hidden inputs
-          if (document.getElementById('route_type').value == 'toRoutes'){
-            document.getElementById('startPoint').value = `${lat},${lon}`;  
-          }else if (document.getElementById('route_type').value == 'fromRoutes'){
-            document.getElementById('endPoint').value = `${lat},${lon}`;   
-          }
-            
-            // Add/update marker
-            if (clickMarker) {
-                map.removeLayer(clickMarker);
-            }
-            
-            clickMarker = new ol.layer.Vector({
-                source: new ol.source.Vector({
-                    features: [
-                        new ol.Feature({
-                            geometry: new ol.geom.Point(ol.proj.fromLonLat([lon, lat]))
-                        })
-                    ]
-                }),
-                style: new ol.style.Style({
-                    image: new ol.style.Circle({
-                        radius: 6,
-                        fill: new ol.style.Fill({color: 'red'}),
-                        stroke: new ol.style.Stroke({
-                            color: 'white', width: 2
-                        })
-                    })
-                })
-            });
-            
-            map.addLayer(clickMarker);
-        });
-    }
-
-    function clearCoordinates() {
-        document.getElementById('coordinates').innerHTML = '';
-        document.getElementById('startPoint').value = '';
-        document.getElementById('endPoint').value = '';
-        if (clickMarker) {
-            map.removeLayer(clickMarker);
-        }
-    }
-
-    // Initialize the map when the page loads
-    window.addEventListener('load', initMap);
-</script>
 
         </form>
         <div id="add-route-response" class="response"></div>
@@ -182,21 +95,9 @@
             <input type="hidden" name="limit" value="10">
             <button type="submit">Search</button>
         </form>
-
-        <script>
-            document.body.addEventListener('htmx:configRequest', (event) => {
-                const token = localStorage.getItem('token');
-                if (token) {
-                    event.detail.headers['Authorization'] = `Bearer ${token}`;
-                }
-            });
-        </script>
     </div>
-
     <!-- Route Results -->
-    <div id="route-results" class="section">
-        <!-- Results will be loaded here -->
-    </div>
+    <div id="route-results" class="section"></div>
 
     <!-- Template for Route Cards -->
     <template id="route-template">
@@ -205,36 +106,50 @@
             <p>Date: ${startTimestamp}</p>
             <p>Address: ${address}</p>
             <p>Area: ${generalArea}</p>
-            <button hx-post="/api/connect" hx-vals='{"userId": "${userId}"}'>Connect</button>
+            <button onclick="sendConnectionRequest('${userId}')">Connect</button>
+            <div id="connection-result-${userId}" class="connection-result"></div>
         </div>
     </template>
 
     <script>
-        window.onload = function() {
+        /** Route forms control */
+
+        window.onload = function () {
+
             if (!localStorage.getItem('token')) {
                 window.location.href = '/index.html';
             }
         };
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                event.detail.headers['Authorization'] = `Bearer ${token}`;
+            }
+        });
+
         // Handle logout
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('userId');
             window.location.href = '/index.html';
         }
-        function handleRouteTypeChange(){
+        function handleRouteTypeChange() {
             let startPoint_field = document.getElementById('startPoint');
             let endPoint_field = document.getElementById('endPoint');
-          if (document.getElementById('route_type').value == "toRoutes"){
-            endPoint_field.value = "Dawood University";
-            startPoint_field.disabled = false;
-            endPoint_field.disabled = true;
-          }else if (document.getElementById('route_type').value == "fromRoutes"){
-            startPoint_field.value = "Dawood University";
-            endPoint_field.disabled = false;
-            startPoint_field.disabled = true;
-          }
+            let routeType = document.getElementById('route_type').value;
+
+            if (routeType === "toRoutes") {  // Changed to singular to match your API
+                endPoint_field.value = "Dawood University";
+                endPoint_field.readOnly = true;  // Correct property is readOnly (capital O)
+                startPoint_field.value = "";
+                startPoint_field.readOnly = false;
+            } else if (routeType === "fromRoutes") {  // Changed to singular to match your API
+                startPoint_field.value = "Dawood University";
+                startPoint_field.readOnly = true;
+                endPoint_field.value = "";
+                endPoint_field.readOnly = false;
+            }
         }
-        
 
         // Handle add route response
         document.body.addEventListener('htmx:afterRequest', function (evt) {
@@ -242,7 +157,7 @@
                 const responseDiv = evt.target;
                 try {
                     const response = JSON.parse(responseDiv.innerHTML);
-                    if (response.status === 'success') {
+                    if (response) {
                         responseDiv.innerHTML = `<div class="success">Route added successfully!</div>`;
                         // Refresh the route list
                         htmx.trigger('#route-results', 'refresh');
@@ -254,7 +169,6 @@
                 }
             }
         });
-
         // Custom rendering for route results
         htmx.on('htmx:afterSwap', function (evt) {
             if (evt.target.id === 'route-results') {
@@ -268,7 +182,6 @@
                     const html = Object.entries(route).reduce((acc, [key, value]) => {
                         return acc.replace(new RegExp(`\\$\{${key}}`, 'g'), value);
                     }, template.innerHTML);
-
                     const div = document.createElement('div');
                     div.innerHTML = html;
                     container.appendChild(div);
@@ -286,12 +199,15 @@
                 container.appendChild(pagination);
             }
         });
-
         function navigatePage(page) {
             const form = document.querySelector('#route-results').previousElementSibling;
             form.querySelector('[name="page"]').value = page;
             htmx.trigger(form, 'submit');
         }
+        function capitalizeFirstLetter(val) {
+            return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+        }
+
     </script>
 </body>
 

@@ -1,0 +1,490 @@
+/*
+ * @author Burhan Arif
+ * styles.css
+ * Made for TravelPartner.git
+ * @see https://github.com/burhanarif4211/TravelPartner.git
+  */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+:root {
+    --primary: #4361ee;
+    --secondary: #3f37c9;
+    --success: #4cc9f0;
+    --danger: #f72585;
+    --warning: #f8961e;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --gray: #6c757d;
+    --light-gray: #e9ecef;
+    --border: #dee2e6;
+}
+
+body {
+    background-color: #f5f7fb;
+    color: var(--dark);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.logo span {
+    color: var(--success);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.logout-btn {
+    background-color: var(--light);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.refresh-btn {
+    background-color: var(--light);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--dark);
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary);
+}
+
+.response {
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.route-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    background-color: white;
+    transition: transform 0.3s ease;
+}
+
+.route-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+}
+
+.route-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--primary);
+}
+
+.route-detail {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.route-detail-label {
+    font-weight: 500;
+    min-width: 120px;
+    color: var(--gray);
+}
+
+.connect-btn {
+    background-color: var(--success);
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.connect-btn:hover {
+    background-color: #3aa8d0;
+}
+
+.requests-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.request-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.3s;
+}
+
+.request-item:hover {
+    background-color: var(--light-gray);
+}
+
+.request-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--warning);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    margin-right: 15px;
+}
+
+.request-info {
+    flex-grow: 1;
+}
+
+.request-user {
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.request-time {
+    font-size: 12px;
+    color: var(--gray);
+}
+
+.request-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+}
+
+.accept-btn {
+    background-color: var(--success);
+    color: white;
+}
+
+.decline-btn {
+    background-color: var(--light-gray);
+    color: var(--dark);
+}
+
+.no-requests {
+    text-align: center;
+    padding: 30px;
+    color: var(--gray);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.page-btn {
+    padding: 8px 15px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.page-btn.active {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* deep seek don't judge */
+body {
+    font-family: Arial, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.section {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+input,
+select,
+button {
+    padding: 8px;
+    margin: 5px;
+}
+
+.route-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.hidden {
+    display: none;
+}
+.request-details {
+font-size: 13px;
+color: var(--gray);
+line-height: 1.4;
+margin-top: 5px;
+}
+
+.request-details div {
+margin-bottom: 5px;
+padding: 5px;
+background-color: var(--light-gray);
+border-radius: 4px;
+}
+
+.connected-info {
+flex-grow: 1;
+}
+
+.connected-name {
+font-weight: 600;
+font-size: 20px;
+margin-bottom: 5px;
+}
+
+.connected-id, .connected-phone, .connected-transport, .connected-status {
+font-size: 15px;
+margin-bottom: 8px;
+}
+
+.connected-route {
+margin-top: 15px;
+padding: 12px;
+background-color: #f0f9ff;
+border-radius: 8px;
+border-left: 3px solid var(--primary);
+}
+
+.connected-route h4 {
+margin-bottom: 8px;
+color: var(--primary);
+}
+
+.contact-actions {
+margin-top: 20px;
+text-align: center;
+}
+
+.phone-icon {
+margin-right: 8px;
+}
+
+
+/* Add to your existing styles */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--dark);
+}
+
+.user-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+}
+
+.transport-type {
+    background-color: var(--light-gray);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.availability {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.availability.available {
+    background-color: #e6f7ee;
+    color: #0d8a4c;
+}
+
+.availability.unavailable {
+    background-color: #feeceb;
+    color: #d92c20;
+}
