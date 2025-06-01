@@ -15,10 +15,7 @@
     <div class="header">
         <div class="logo">Travel<span>Partner</span></div>
         <div class="user-info">
-            <div class="avatar" id="user-avatar"></div>
-            <div class="user-name"></div>
-            <!--more info-->
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <!-- filled automatically on load by js-->
         </div>
         
     </div>
@@ -46,7 +43,7 @@
     </div>
 
     <!-- Add Route Form -->
-    <div class="section">
+    <div class="section card">
         <h2>Add New Route</h2>
         <form hx-ext="json-enc" hx-post="http://localhost:7000/api/addroute" hx-target="#add-route-response">
             <select onchange="handleRouteTypeChange()" id="route_type" name="type" required>
@@ -74,7 +71,7 @@
             <input type="datetime-local" name="startTimestamp" required>
             <input type="text" name="address" placeholder="Address" required>
             <input type="text" name="generalArea" placeholder="General Area" required>
-            <button type="submit">Add Route</button>
+            <button class="refresh-btn" type="submit">Add Route</button>
 
 
         </form>
@@ -82,7 +79,7 @@
     </div>
 
     <!-- Route Filter and Search -->
-    <div class="section">
+    <div class="section card">
         <h2>Find Routes</h2>
         <form hx-ext="json-enc" hx-post="http://localhost:7000/api/routes" hx-target="#route-results"
             hx-trigger="submit, change from:select" id="route-form">
@@ -97,21 +94,36 @@
         </form>
     </div>
     <!-- Route Results -->
-    <div id="route-results" class="section"></div>
+    <div id="route-results" class="section card"></div>
 
     <!-- Template for Route Cards -->
     <template id="route-template">
-        <div class="route-card">
+        <div class="route-card card">
             <h3>${startPoint} → ${endPoint}</h3>
             <p>Date: ${startTimestamp}</p>
             <p>Address: ${address}</p>
             <p>Area: ${generalArea}</p>
-            <button onclick="sendConnectionRequest('${userId}')">Connect</button>
+            <button class="action-btn  accept-btn" onclick="sendConnectionRequest('${userId}')">Connect</button>
+            <button class="action-btn  page-btn" onclick="launchMaps('${startPoint}','${endPoint}')">View On Maps</button>
             <div id="connection-result-${userId}" class="connection-result"></div>
         </div>
     </template>
 
     <script>
+        function launchMaps(start, end){
+            if (start === "Dawood University"){
+                console.log("launching for end")
+                var lat = end.split(',')[0];
+                var long = end.split(',')[1];
+            }else if(end === "Dawood University"){
+                var lat = start.split(',')[0];
+                var long = start.split(',')[1];
+                console.log("launching for start")
+            }
+
+            let url = `https://google.com/maps?q=${lat},${long}`
+            window.open(url, "_blank");
+        }
         /** Route forms control */
 
         window.onload = function () {

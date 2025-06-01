@@ -138,8 +138,7 @@ async function loadUserInfo(token, userId) {
 
         const data = await response.json();
         
-        // Update header with user info
-        const header = document.querySelector('.header');
+        // Update user info
         const userInfoContainer = document.querySelector('.user-info');
         
         // Generate initials from name
@@ -175,8 +174,7 @@ async function showConnectedView(con) {
     let partnerDetails = document.getElementById("partner-details");
     let details = await fetchUserDetails(con);
     const html = `
-    <div class="request-item">
-    <button onclick="deleteConnection('${con}')"></button>
+    <div class="request-item card">
         <div class="request-avatar" style="background-color: #${details.name.slice(0, 6)};">${details.name.charAt(0).toUpperCase()}</div>
         <div class="request-info">
             <div class="request-user">${capitalizeFirstLetter(details.name) || 'Travel Partner'}</div>
@@ -196,6 +194,7 @@ async function showConnectedView(con) {
                 </div>
                 ` : 'No from route added'}
             </div>
+            <button class="action-btn accept-btn" onclick="deleteConnection('${con}')">Disregard Connection</button>
         </div>
 
     </div>
@@ -213,8 +212,11 @@ async function deleteConnection(con) {
             'Authorization': `Bearer ${token}`
         }
     });
-    const data = await response.json();
-    console.log(data.status);
+    //TODO: add delay and confirmation of con deletion.
+    
+    showRequestView();
+    await loadReceivedRequests();
+
 }
 function showRequestView() {
     let reqView = document.getElementById("requests-section");
@@ -308,9 +310,9 @@ function renderRequestItem(userId, details, container) {
         : userId.charAt(0).toUpperCase();
 
     const html = `
-        <div class="request-item" id="request-${userId}">
+        <div class="request-item card" id="request-${userId}">
             <div class="request-avatar" style="background-color: #${userId.slice(0, 6)};">${initials}</div>
-            <div class="request-info">
+            <div class="request-info ">
                 <div class="request-user">${capitalizeFirstLetter(details.name) || 'Travel Partner'}</div>
                 <div class="request-details">
                     <div><strong>Transport:</strong> ${details.transportationType}</div>

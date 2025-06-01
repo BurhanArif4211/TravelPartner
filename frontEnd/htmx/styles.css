@@ -199,11 +199,9 @@ body {
 }
 
 .route-card {
-    border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 15px;
-    background-color: white;
+    padding: 15px;
+    margin: 10px 0;
     transition: transform 0.3s ease;
 }
 
@@ -255,12 +253,13 @@ body {
     display: flex;
     align-items: center;
     padding: 15px;
-    border-bottom: 1px solid var(--border);
+    background-color: var(--light-gray);
     transition: background-color 0.3s;
 }
 
 .request-item:hover {
-    background-color: var(--light-gray);
+    background-color: #e9f7ff;
+    
 }
 
 .request-avatar {
@@ -310,7 +309,7 @@ body {
 }
 
 .decline-btn {
-    background-color: var(--light-gray);
+    background-color: var(--danger);
     color: var(--dark);
 }
 
@@ -365,8 +364,6 @@ body {
 .section {
     margin-bottom: 30px;
     padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
 }
 
 input,
@@ -377,10 +374,7 @@ button {
 }
 
 .route-card {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 5px;
+
 }
 
 .pagination {
@@ -391,6 +385,8 @@ button {
     display: none;
 }
 .request-details {
+    display: flex;
+    flex-direction: row;
 font-size: 13px;
 color: var(--gray);
 line-height: 1.4;
@@ -400,7 +396,6 @@ margin-top: 5px;
 .request-details div {
 margin-bottom: 5px;
 padding: 5px;
-background-color: var(--light-gray);
 border-radius: 4px;
 }
 
