@@ -96,18 +96,17 @@ window.addEventListener('load', initMap);
 /** Conditional rendering for connections, requests */
 
 document.addEventListener('DOMContentLoaded', async function () {
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    // Check if user is already connected
-    loadUserInfo(token,userId);
     try {
+      var token = localStorage.getItem('token');
+      var userId = localStorage.getItem('userId');
+      (loadUserInfo(token, userId))?console.log():window.location.href = "/index.html";
         const response = await fetch('http://localhost:7000/api/connect/list', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-
+        
         const data = await response.json();
 
         if (data.connections.length == 0) {
@@ -134,6 +133,7 @@ async function loadUserInfo(token, userId) {
 
         if (!response.ok) {
             throw new Error('Failed to fetch user info');
+            return false;
         }
 
         const data = await response.json();

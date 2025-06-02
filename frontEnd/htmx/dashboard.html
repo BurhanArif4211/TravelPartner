@@ -5,9 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Travel Partner</title>
-    <script src="https://unpkg.com/htmx.org"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
-    <script src="dashboard.js"></script>
+    <script src="./lib/htmx.min.js"></script>
+    <script src="./lib/json-enc.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -110,6 +109,24 @@
     </template>
 
     <script>
+    
+document.addEventListener('DOMContentLoaded', async function () {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    // Check if user is already connected
+  let res = await fetch(`http://localhost:7000/api/user/${userId}`,{
+   method:'GET',
+    headers:{
+      'Authorization':`Bearer ${token}`
+    }})
+  
+    if(!res.ok){
+       logout(); 
+    }else{
+      var isAuth =true;
+    } 
+});
+
         function launchMaps(start, end){
             if (start === "Dawood University"){
                 console.log("launching for end")
@@ -125,13 +142,6 @@
             window.open(url, "_blank");
         }
         /** Route forms control */
-
-        window.onload = function () {
-
-            if (!localStorage.getItem('token')) {
-                window.location.href = '/index.html';
-            }
-        };
         document.body.addEventListener('htmx:configRequest', (event) => {
             const token = localStorage.getItem('token');
             if (token) {
@@ -143,6 +153,7 @@
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('userId');
+            localStorage.removeItem('userInitial')
             window.location.href = '/index.html';
         }
         function handleRouteTypeChange() {
@@ -221,6 +232,8 @@
         }
 
     </script>
+
+    <script defer src="dashboard.js"></script>
 </body>
 
 </html>

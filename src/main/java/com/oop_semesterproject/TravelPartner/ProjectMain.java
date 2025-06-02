@@ -24,13 +24,13 @@ public class ProjectMain {
                         });
                     });
                 }
-        ).start(7000);
+        ).start("0.0.0.0", 7000);
         Database.initializeDatabase();
         ObjectMapper objectMapper = new ObjectMapper();
         // for testing on local host
         app.before(ctx -> {
             ctx.header("Access-Control-Allow-Origin", "*");
-            ctx.header("Access-Control-Allow-Headers", "*");
+            ctx.header("Access-Control-Allow-Headers", "Authorization,*");
         });
 
         // Auth routes

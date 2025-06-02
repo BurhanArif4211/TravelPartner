@@ -42,7 +42,7 @@
   </build>
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
-    <exec.mainClass>com.oop_semesterproject.TravelPartner.ProjectMain</exec.mainClass>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <exec.mainClass>com.oop_semesterproject.TravelPartner.ProjectMain</exec.mainClass>
   </properties>
 </project>
